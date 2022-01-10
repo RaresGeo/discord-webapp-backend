@@ -1,0 +1,13 @@
+[
+  {
+    "_id": "61d89aeba8cc2fc5b177e1c1",
+    "guild_id": "646115129712181262",
+    "tracking": true,
+    "bot_channels": [
+      "829049480242135082"
+    ],
+    "message_life": 10,
+    "prefix": "*",
+    "__v": 0
+  }
+]
