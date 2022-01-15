@@ -169,6 +169,9 @@ client.on("messageUpdate", async(oldMessage, newMessage) => {
 }) */
 
 connectDB().then(async () => {
-  initServer();
-  client.login(token);
+  await client.login(token);
+  let guild = await client.guilds.fetch()
+  console.log(guild.first().iconURL())
+  let actions = {};
+  initServer(actions);
 });

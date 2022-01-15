@@ -17,7 +17,6 @@ const getAuthCode = async (code) => {
 
   const response = await fetch(DISCORD_ENDPOINT + "oauth2/token", requestOptions).catch((err) => console.log(err));
   const data = await response.json();
-  console.log("Get access token", data);
   return data;
 };
 
@@ -35,7 +34,6 @@ const refreshAuthCode = async (refresh_token) => {
 
   const response = await fetch(DISCORD_ENDPOINT + "oauth2/token", requestOptions).catch((err) => console.log(err));
   const data = await response.json();
-  console.log("Refresh access token", data);
   return data;
 };
 
@@ -68,16 +66,19 @@ module.exports.login_post = async (req, res) => {
   });
 
   data = await response.json();
+  if (data.id) {
+    console.log(data.id);
+    req.session.user_id = data.id;
+  }
 
   return res.status(200).json(data);
 };
 
 module.exports.logout_post = (req, res) => {
-  console.log(req.session);
   req.session.destroy((err) => {
     if (err) console.log(err);
   });
-  console
+  console;
 
   return res.status(200).json({ msg: `Logged out successfully` });
 };

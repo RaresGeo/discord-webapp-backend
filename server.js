@@ -6,8 +6,9 @@ const cors = require("cors");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const { uri, PORT, secret } = require("./utilities/config").config;
 const { login_post, logout_post } = require("./controllers/authController");
+const { guilds_get } = require("./controllers/guildsController");
 
-module.exports.initServer = () => {
+module.exports.initServer = (actions) => {
   const app = express();
 
   const store = new MongoDBStore({
@@ -41,6 +42,7 @@ module.exports.initServer = () => {
   app.post("/logout", logout_post);
 
   // Other routes will go here
+  app.get("/guilds", guilds_get);
 
   const server = http.createServer(app);
 
@@ -49,11 +51,11 @@ module.exports.initServer = () => {
   // Websocket stuff
   const wss = new WebSocket.Server({ clientTracking: false, noServer: true });
 
-  server.on("upgrade", async (request, socket, head) => {
+  server.on("upgrade", async (req, socket, head) => {
     // Parsing for webclient using session
     console.log("Parsing session from request...");
-    sessionParser(request, {}, () => {
-      if (!request.session.loggedIn) {
+    sessionParser(req, {}, () => {
+      if (!req.session.access_token) {
         socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
         socket.destroy();
         return;
@@ -61,14 +63,17 @@ module.exports.initServer = () => {
 
       console.log("Session is parsed!");
 
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit("connection", ws, request);
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        wss.emit("connection", ws, req);
       });
     });
   });
 
-  wss.on("connection", (ws, request) => {
-    const userId = request.session.code;
+  const map = new Map();
+
+  wss.on("connection", (ws, req) => {
+    const userId = req.session.code;
+    if (actions.onWsConnect) ws.send(JSON.stringify(actions.onWsConnect()));
 
     map.set(userId, ws);
 
@@ -79,7 +84,8 @@ module.exports.initServer = () => {
     });
 
     ws.on("close", function () {
-      //   map.delete(userId);
+      map.delete(userId);
+      if (actions.onWsClose) ws.send(JSON.stringify(actions.onWsClose()));
       console.log("Closed websocket");
     });
   });
