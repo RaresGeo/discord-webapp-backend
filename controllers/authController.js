@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 const { CLIENT_ID, CLIENT_SECRET } = require("../utilities/config").config;
 const DISCORD_ENDPOINT = "https://discord.com/api/v8/";
 
-const getAuthCode = async (code) => {
+const getAuthCode = async (code, redirect_uri) => {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -11,7 +11,7 @@ const getAuthCode = async (code) => {
       client_secret: CLIENT_SECRET,
       grant_type: "authorization_code",
       code: code,
-      redirect_uri: "http://localhost:3000/login",
+      redirect_uri,
     }),
   };
 
@@ -42,7 +42,7 @@ const oneDay = () => {
 };
 
 module.exports.login_post = async (req, res) => {
-  let { code } = req.body;
+  let { code, redirect_uri } = req.body;
   let data = {};
   const today = new Date();
 
@@ -52,7 +52,7 @@ module.exports.login_post = async (req, res) => {
   } else if (!code) {
     return res.status(200).json({ err: "No code provided." });
   } else if (data.error || !req.session.refresh_token) {
-    data = await getAuthCode(code);
+    data = await getAuthCode(code, redirect_uri);
   }
 
   let { access_token, refresh_token, expires_in } = data;
