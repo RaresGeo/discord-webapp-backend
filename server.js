@@ -37,8 +37,9 @@ module.exports.initServer = (actions) => {
   app.use(express.json());
 
   // Authentication stuff
-  app.post("/login", login_post);
-  app.post("/logout", logout_post);
+  app.post("/api/login", login_post);
+  app.post("/api/logout", logout_post);
+	app.get("/api/test", (req, res) => { return res.status(200).json({ msg : "Hello... traveler?" })});
 
   const server = http.createServer(app);
 
