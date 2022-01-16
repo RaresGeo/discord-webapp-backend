@@ -171,6 +171,6 @@ client.on("messageUpdate", async(oldMessage, newMessage) => {
 
 connectDB().then(async () => {
   await client.login(token);
-  let actions = getActions(client);
+  const actions = getActions(client);
   initServer(actions);
 });

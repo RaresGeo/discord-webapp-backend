@@ -6,7 +6,6 @@ const cors = require("cors");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const { uri, PORT, secret } = require("./utilities/config").config;
 const { login_post, logout_post } = require("./controllers/authController");
-const { guilds_get } = require("./controllers/guildsController");
 
 module.exports.initServer = (actions) => {
   const app = express();
@@ -41,9 +40,6 @@ module.exports.initServer = (actions) => {
   app.post("/login", login_post);
   app.post("/logout", logout_post);
 
-  // Other routes will go here
-  app.get("/guilds", guilds_get);
-
   const server = http.createServer(app);
 
   server.listen(PORT, console.log(`Running on http://localhost:${PORT}`));
@@ -72,22 +68,22 @@ module.exports.initServer = (actions) => {
   const map = new Map();
 
   wss.on("connection", (ws, req) => {
-    const userId = req.session.user_id;
+    const { user_id } = req.session;
+    const { access_token } = req.session;
     if (actions.onWsConnect) ws.send(JSON.stringify(actions.onWsConnect()));
 
-    map.set(userId, ws);
+    map.set(user_id, ws);
 
     ws.on("message", async (message) => {
       const data = JSON.parse(message);
       if (actions.onWsMessage) {
-        let result = await actions.onWsMessage(data);
-        console.log("Result: ", result);
+        let result = await actions.onWsMessage({ ...data, access_token });
         ws.send(JSON.stringify(result));
       }
     });
 
     ws.on("close", function () {
-      map.delete(userId);
+      map.delete(user_id);
       if (actions.onWsClose) ws.send(JSON.stringify(actions.onWsClose()));
       console.log("Closed websocket");
     });
