@@ -11,6 +11,7 @@ const DEFAULT_PREFIX = "*";
 
 // Server stuff
 const { initServer } = require("./server");
+const { getActions } = require("./reducer");
 
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILDS);
@@ -170,8 +171,6 @@ client.on("messageUpdate", async(oldMessage, newMessage) => {
 
 connectDB().then(async () => {
   await client.login(token);
-  let guild = await client.guilds.fetch()
-  console.log(guild.first().iconURL())
-  let actions = {};
+  let actions = getActions(client);
   initServer(actions);
 });

@@ -67,7 +67,6 @@ module.exports.login_post = async (req, res) => {
 
   data = await response.json();
   if (data.id) {
-    console.log(data.id);
     req.session.user_id = data.id;
   }
 

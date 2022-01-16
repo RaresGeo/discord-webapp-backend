@@ -72,15 +72,18 @@ module.exports.initServer = (actions) => {
   const map = new Map();
 
   wss.on("connection", (ws, req) => {
-    const userId = req.session.code;
+    const userId = req.session.user_id;
     if (actions.onWsConnect) ws.send(JSON.stringify(actions.onWsConnect()));
 
     map.set(userId, ws);
 
     ws.on("message", async (message) => {
-      data = JSON.parse(message);
-      console.log(`Received a message from user ${userId}:`);
-      console.log(data);
+      const data = JSON.parse(message);
+      if (actions.onWsMessage) {
+        let result = await actions.onWsMessage(data);
+        console.log("Result: ", result);
+        ws.send(JSON.stringify(result));
+      }
     });
 
     ws.on("close", function () {
