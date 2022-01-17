@@ -21,7 +21,7 @@ module.exports.getGuilds = async (client, { access_token }) => {
   const data = [];
   userGuilds.forEach((guild) => {
     const has_bot = botGuilds.some((botGuild) => botGuild.id === guild.id);
-    const is_admin = guild.permissions & (0x8 == 0x8);
+    const is_admin = (guild.permissions & 0x8) === 0x8;
     if (has_bot || is_admin)
       data.push({
         ...guild,
