@@ -9,7 +9,7 @@ module.exports.getGuilds = async (client, { access_token }) => {
     headers: { Authorization: `Bearer ${access_token}` },
   }).catch((err) => console.log(err));
 
-  if (response.status !== 200) return res.status(400);
+  if (response.status !== 200) return data({ err: `Response status ${response.status}` });
 
   const userGuilds = await response.json();
   /* const userAdminGuilds = userGuilds.filter(({ permissions }) => {
@@ -18,7 +18,17 @@ module.exports.getGuilds = async (client, { access_token }) => {
 
   const botGuilds = client.guilds.cache;
 
-  const data = userGuilds.filter((guild) => botGuilds.some((botGuild) => botGuild.id === guild.id));
+  const data = [];
+  userGuilds.forEach((guild) => {
+    const has_bot = botGuilds.some((botGuild) => botGuild.id === guild.id);
+    const is_admin = guild.permissions & (0x8 == 0x8);
+    if (has_bot || is_admin)
+      data.push({
+        ...guild,
+        has_bot,
+        is_admin,
+      });
+  });
 
   return data;
 };
